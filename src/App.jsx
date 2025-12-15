@@ -1,32 +1,26 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
-import HomePage from './pages/HomePage';
-import AllHousesPage from './pages/AllHousesPage';
-import HouseDetailsPage from './pages/HouseDetailsPage';
-import DashboardPage from './pages/DashboardPage';
-import AddHousePage from './pages/AddHousePage';
+import HomePage from './pages/HomePage';       // <--- 1. Import this
 import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage'; 
+import RegisterPage from './pages/RegisterPage';
+import DashboardPage from './pages/DashboardPage';
+import HouseDetailsPage from './pages/HouseDetailsPage';
 
 function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-[#EFF8FF] text-slate-800 font-sans">
-        <Navbar />
-        <main> {/* Removed padding here to let BG flow full screen */}
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/houses" element={<AllHousesPage />} />
-            <Route path="/houses/:id" element={<HouseDetailsPage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/add-house" element={<AddHousePage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} /> {/* <--- ADD THIS */}
-          </Routes>
-        </main>
+    <>
+      <Navbar />
+      <div className="pt-20"> 
+        <Routes>
+          <Route path="/" element={<HomePage />} />  {/* <--- 2. Ensure this line exists */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/house/:id" element={<HouseDetailsPage />} />
+        </Routes>
       </div>
-    </Router>
+    </>
   );
 }
 

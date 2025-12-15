@@ -1,82 +1,67 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRental } from '../context/RentalContext';
-import HouseCard from '../components/HouseCard';
-import { Search, Filter } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, MapPin, Check, Home } from 'lucide-react';
 
 const HomePage = () => {
-  const { houses, loading } = useRental();
-  const [selectedCategory, setSelectedCategory] = useState('All'); // State for active filter
-  const [searchTerm, setSearchTerm] = useState('');
+  const { user } = useRental();
+  const navigate = useNavigate();
+  const [houses, setHouses] = useState([]);
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  // --- FILTERING LOGIC ---
-  const filteredHouses = houses.filter(house => {
-    // 1. Filter by Category
-    const categoryMatch = selectedCategory === 'All' || house.type === selectedCategory;
-    // 2. Filter by Search (Location or Title)
-    const searchMatch = house.location.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                        house.title.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    return categoryMatch && searchMatch;
-  });
+  useEffect(() => {
+    const fetchHouses = async () => {
+      try {
+          setLoading(true);
+          const res = await fetch(`http://localhost:5000/api/houses?query=${search}`);
+          const data = await res.json();
+          setHouses(Array.isArray(data) ? data : []);
+      } catch (err) { console.error(err); setHouses([]); } finally { setLoading(false); }
+    };
+    fetchHouses();
+  }, [search]);
+
+  const handleBook = async (houseId) => {
+    if(!user) { alert("Please Login to Request Booking"); navigate('/login'); return; }
+    if(user.role === 'owner') return alert("Owners cannot book houses.");
+    const res = await fetch(`http://localhost:5000/api/houses/${houseId}/request`, { method: 'PUT', headers: { Authorization: `Bearer ${user.token}` } });
+    if(res.ok) { alert("Request Sent!"); } else { alert("Error sending request"); }
+  };
+
+  const hasRequested = (house) => house.requests?.some(r => r.userId === user?._id);
 
   return (
-    <div className="min-h-screen bg-[#EFF8FF]">
-      
-      <header className="pt-12 pb-10 px-6 max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-10">
-          <div>
-             <h1 className="text-4xl font-extrabold text-slate-900 mb-2">Find your next <br/><span className="text-[#3A9AF7]">perfect stay</span></h1>
-             <p className="text-slate-500">Search through verified listings.</p>
-          </div>
-          
-          {/* Search Input */}
-          <div className="bg-white p-2 rounded-2xl shadow-sm border border-blue-100 flex items-center w-full md:w-96">
-            <Search className="text-slate-400 w-5 h-5 ml-3" />
-            <input 
-              type="text" 
-              placeholder="Search location..." 
-              className="flex-1 px-3 py-2 outline-none text-slate-700 bg-transparent"
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </div>
+    <div className="min-h-screen bg-slate-50 pb-20">
+       <div className="bg-blue-600 px-6 py-16 text-center text-white">
+           <h1 className="text-4xl font-extrabold mb-4">Find Your Home</h1>
+           <div className="max-w-xl mx-auto flex bg-white p-2 rounded-full shadow-2xl">
+               <input type="text" placeholder="Search location..." className="flex-1 px-6 py-3 rounded-full outline-none text-slate-700" onChange={(e) => setSearch(e.target.value)} />
+               <button className="bg-slate-900 text-white px-8 py-3 rounded-full font-bold">Search</button>
+           </div>
+       </div>
 
-        {/* --- CATEGORY BUTTONS (WORKING NOW) --- */}
-        <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar mb-8">
-          {['All', 'Villa', 'Apartment', 'Cottage', 'Penthouse'].map((cat) => (
-            <button 
-              key={cat} 
-              onClick={() => setSelectedCategory(cat)} // <--- CLICK HANDLER
-              className={`px-6 py-2 rounded-full font-medium text-sm whitespace-nowrap transition-all 
-                ${selectedCategory === cat 
-                  ? 'bg-[#3A9AF7] text-white shadow-lg shadow-blue-200 scale-105' 
-                  : 'bg-white text-slate-500 hover:bg-[#DBEEFE] hover:text-[#3A9AF7]'}`
-              }
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-      </header>
-
-      {/* Grid */}
-      <section className="px-6 pb-20 max-w-7xl mx-auto">
-        {loading ? (
-          <div className="text-center py-20 text-slate-400">Loading properties...</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filteredHouses.length > 0 ? (
-              filteredHouses.map(house => (
-                <HouseCard key={house._id} house={house} />
-              ))
-            ) : (
-              <div className="col-span-full text-center text-slate-400 py-10">
-                No properties found for this category.
-              </div>
-            )}
-          </div>
-        )}
-      </section>
+       <div className="max-w-6xl mx-auto p-6 -mt-10 relative z-10">
+           {loading ? <div className="text-center p-10">Loading...</div> : houses.length === 0 ? (
+               <div className="bg-white p-16 rounded-2xl shadow-lg text-center"><Home size={48} className="mx-auto text-slate-300"/><p>No houses found.</p></div>
+           ) : (
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                   {houses.map(house => (
+                       <div key={house._id} className="bg-white p-4 rounded-2xl shadow-lg border border-slate-100 flex flex-col h-full">
+                           <img src={(house.images && house.images.length>0) ? house.images[0] : "https://via.placeholder.com/400"} className="w-full h-48 object-cover rounded-xl bg-slate-200" alt="house"/>
+                           <div className="flex-1 mt-4">
+                               <div className="flex justify-between"><h3 className="font-bold text-lg">{house.title}</h3><p className="text-blue-600 font-bold">${house.rent}</p></div>
+                               <p className="text-slate-500 text-sm mb-4"><MapPin size={14} className="inline"/> {house.location}</p>
+                               <div className="flex gap-2">
+                                   <button onClick={() => navigate(`/house/${house._id}`)} className="flex-1 border-2 border-slate-100 font-bold py-2 rounded-xl">Details</button>
+                                   {house.isBooked ? <button disabled className="flex-1 bg-slate-100 text-slate-400 font-bold py-2 rounded-xl">Occupied</button> : hasRequested(house) ? <button disabled className="flex-1 bg-yellow-100 text-yellow-700 font-bold py-2 rounded-xl">Sent</button> : <button onClick={() => handleBook(house._id)} className="flex-1 bg-blue-600 text-white font-bold py-2 rounded-xl">Book</button>}
+                               </div>
+                           </div>
+                       </div>
+                   ))}
+               </div>
+           )}
+       </div>
     </div>
   );
 };

@@ -1,93 +1,81 @@
 import React, { useState } from 'react';
 import { useRental } from '../context/RentalContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { LogIn, Mail, Lock } from 'lucide-react';
+import { Home } from 'lucide-react';
 
 const LoginPage = () => {
   const { login } = useRental();
   const navigate = useNavigate();
-  
-  const [formData, setFormData] = useState({ email: '', password: '', role: 'renter' });
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
-    e.preventDefault(); // STOP PAGE RELOAD
-    login(formData.email, formData.role);
-    navigate('/dashboard'); // Go to Dashboard
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    
+    // 1. Attempt Login
+    const userData = await login(formData.email, formData.password);
+    
+    // 2. Check Result
+    if (userData) {
+      console.log("Logged in as:", userData.role); // Debugging check
+
+      if (userData.role === 'owner') {
+        navigate('/dashboard'); // Owners -> Dashboard
+      } else {
+        navigate('/'); // Renters -> Home Page
+      }
+    } else {
+      setError('Invalid email or password');
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#EFF8FF] flex items-center justify-center px-4">
-      <div className="bg-white p-8 rounded-[2rem] shadow-xl w-full max-w-md border border-blue-50">
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-4">
+      <div className="mb-8 text-center">
+         <div className="flex items-center justify-center gap-2 mb-2">
+            <div className="bg-blue-600 p-2 rounded-lg text-white"><Home size={28}/></div>
+            <h1 className="text-3xl font-extrabold text-slate-800">RentEase</h1>
+         </div>
+         <p className="text-slate-500">Welcome Back</p>
+      </div>
+
+      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-100">
+        <h2 className="text-2xl font-bold text-slate-800 mb-6 text-center">Login</h2>
         
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="bg-[#EFF8FF] w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-[#3A9AF7]">
-            <LogIn className="w-8 h-8" />
-          </div>
-          <h2 className="text-3xl font-extrabold text-slate-800">Welcome Back</h2>
-          <p className="text-slate-400 mt-2">Please enter your details to sign in</p>
-        </div>
+        {error && <div className="bg-red-50 text-red-500 p-3 rounded-lg mb-4 text-sm text-center border border-red-100">{error}</div>}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-sm font-bold text-slate-600 mb-1 ml-1">Email Address</label>
+            <input 
+              type="email" 
+              required
+              className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              placeholder="name@example.com"
+              onChange={(e) => setFormData({...formData, email: e.target.value})}
+            />
+          </div>
           
-          {/* Email Input */}
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700 ml-1">Email Address</label>
-            <div className="relative">
-              <Mail className="absolute left-4 top-3.5 text-slate-400 w-5 h-5" />
-              <input 
-                type="email" 
-                required
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-12 pr-4 outline-none focus:border-[#3A9AF7] focus:ring-2 focus:ring-blue-100 transition-all text-slate-700 font-medium"
-                placeholder="user@example.com"
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-bold text-slate-600 mb-1 ml-1">Password</label>
+            <input 
+              type="password" 
+              required
+              className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              placeholder="••••••••"
+              onChange={(e) => setFormData({...formData, password: e.target.value})}
+            />
           </div>
 
-          {/* Password Input */}
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700 ml-1">Password</label>
-            <div className="relative">
-              <Lock className="absolute left-4 top-3.5 text-slate-400 w-5 h-5" />
-              <input 
-                type="password" 
-                required
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-12 pr-4 outline-none focus:border-[#3A9AF7] focus:ring-2 focus:ring-blue-100 transition-all text-slate-700 font-medium"
-                placeholder="••••••••"
-                onChange={(e) => setFormData({...formData, password: e.target.value})}
-              />
-            </div>
-          </div>
-
-          {/* Role Selector */}
-          <div className="flex gap-4 p-1 bg-slate-50 rounded-xl">
-             <button 
-               type="button"
-               onClick={() => setFormData({...formData, role: 'renter'})}
-               className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${formData.role === 'renter' ? 'bg-white text-[#3A9AF7] shadow-sm' : 'text-slate-400'}`}
-             >
-               Renter
-             </button>
-             <button 
-               type="button"
-               onClick={() => setFormData({...formData, role: 'owner'})}
-               className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${formData.role === 'owner' ? 'bg-white text-[#3A9AF7] shadow-sm' : 'text-slate-400'}`}
-             >
-               Owner
-             </button>
-          </div>
-
-          <button type="submit" className="w-full bg-[#3A9AF7] hover:bg-[#247CEC] text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-95">
-            Sign In
+          <button className="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200">
+            Login
           </button>
         </form>
 
-        {/* Footer Link */}
-        <p className="text-center mt-8 text-slate-500 font-medium">
-          Don't have an account? <Link to="/register" className="text-[#3A9AF7] font-bold hover:underline">Sign up</Link>
-        </p>
+        <div className="mt-6 text-center text-sm text-slate-500">
+          New here? <Link to="/register" className="text-blue-600 font-bold hover:underline">Create Account</Link>
+        </div>
       </div>
     </div>
   );
