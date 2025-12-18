@@ -10,7 +10,7 @@ export const RentalProvider = ({ children }) => {
   const fetchMyHouses = async () => {
     if(!user || user.role !== 'owner') return; // Safety check
     try {
-      const res = await fetch('https://house-rental-backend-1-5gyd.onrender.com/api/houses/my-houses', {
+      const res = await fetch('https://house-rental-backend-1-5gyd.onrender.com/api/users/register', {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       const data = await res.json();
