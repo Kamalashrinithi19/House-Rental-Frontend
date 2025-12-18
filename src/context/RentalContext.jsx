@@ -106,4 +106,5 @@ export const RentalProvider = ({ children }) => {
   );
 };
 
+
 export const useRental = () => useContext(RentalContext);
