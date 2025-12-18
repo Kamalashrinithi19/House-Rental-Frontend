@@ -6,11 +6,10 @@ export const RentalProvider = ({ children }) => {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
   const [myHouses, setMyHouses] = useState([]);
 
-  // --- FIX 1: Corrected URL for fetching houses ---
+  // --- Fetch Owner's Houses ---
   const fetchMyHouses = async () => {
     if(!user || user.role !== 'owner') return; 
     try {
-      // CHANGED: From '/api/users/register' to '/api/houses/my-houses'
       const res = await fetch('https://house-rental-backend-1-5gyd.onrender.com/api/houses/my-houses', {
         headers: { Authorization: `Bearer ${user.token}` }
       });
@@ -21,6 +20,7 @@ export const RentalProvider = ({ children }) => {
 
   useEffect(() => { fetchMyHouses(); }, [user]);
 
+  // --- Login ---
   const login = async (email, password) => {
     try {
       const res = await fetch('https://house-rental-backend-1-5gyd.onrender.com/api/users/login', {
@@ -37,10 +37,9 @@ export const RentalProvider = ({ children }) => {
     } catch (error) { return null; }
   };
 
-  // --- FIX 2: Clean URL for Register ---
+  // --- Register ---
   const register = async (userData) => {
     try {
-      // I typed this URL manually to ensure NO hidden spaces exist
       const res = await fetch('https://house-rental-backend-1-5gyd.onrender.com/api/users/register', {
           method: 'POST', headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(userData)
@@ -54,6 +53,46 @@ export const RentalProvider = ({ children }) => {
         return false;
     } catch (error) { return false; }
   }
+// --- ADD THIS FUNCTION ---
+  const vacateHouse = async (houseId) => {
+    try {
+      const res = await fetch(`https://house-rental-backend-1-5gyd.onrender.com/api/houses/${houseId}/vacate`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      
+      if (res.ok) {
+        // Refresh local data immediately
+        if (user.role === 'owner') fetchMyHouses(); 
+        // If renter, you might want to refresh their booking list here
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Vacate Error:", error);
+      return false;
+    }
+  };
+
+  // Don't forget to add 'vacateHouse' to the value={{ ... }} list at the bottom!
+  // --- FIX 3: ADD THE MISSING BOOKING FUNCTION HERE ---
+  const bookHouse = async (houseId) => {
+      if(!user) return false;
+      try {
+          // NOTICE: I added "/api/houses" before the ID
+          const res = await fetch(`https://house-rental-backend-1-5gyd.onrender.com/api/houses/${houseId}/request`, {
+              method: 'PUT',
+              headers: { 
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${user.token}` 
+              }
+          });
+          return res.ok;
+      } catch (error) {
+          console.error("Booking Error:", error);
+          return false;
+      }
+  };
 
   const logout = () => {
     setUser(null);
@@ -62,7 +101,8 @@ export const RentalProvider = ({ children }) => {
   };
 
   return (
-    <RentalContext.Provider value={{ user, myHouses, login, register, logout, fetchMyHouses }}>
+    // Don't forget to add 'bookHouse' to this list!
+    <RentalContext.Provider value={{ user, myHouses, login, register, logout, fetchMyHouses, bookHouse }}>
       {children}
     </RentalContext.Provider>
   );

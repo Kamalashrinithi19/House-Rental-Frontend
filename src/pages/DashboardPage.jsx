@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useRental } from '../context/RentalContext';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Plus, MapPin, CheckCircle, XCircle, Trash2, Home, Clock, Bell, Pencil, Save, X } from 'lucide-react';
+import { LogOut, Plus, MapPin, CheckCircle, XCircle, Trash2, Home, Clock, Bell, Pencil, Save, X, DoorOpen } from 'lucide-react';
 
 const DashboardPage = () => {
-  const { user, myHouses, logout, fetchMyHouses } = useRental();
+  // 1. ADDED 'vacateHouse' to the destructuring here
+  const { user, myHouses, logout, fetchMyHouses, vacateHouse } = useRental();
   const navigate = useNavigate();
   
   // RENTER STATE
@@ -35,6 +36,7 @@ const DashboardPage = () => {
   // --- API HELPERS ---
   const fetchRenterData = async () => {
       try {
+          // Note: Ideally create a specific endpoint for this, but this works for now
           const res = await fetch(`https://house-rental-backend-1-5gyd.onrender.com/api/houses`);
           const allHouses = await res.json();
           if (Array.isArray(allHouses)) {
@@ -51,6 +53,29 @@ const DashboardPage = () => {
             setMyHome(home);
           }
       } catch(err) { console.error(err); }
+  };
+
+  // --- NEW: HANDLE VACATE (For both Renter and Owner) ---
+  const handleVacate = async (houseId) => {
+    const confirmMessage = user.role === 'owner' 
+        ? "Are you sure you want to remove this tenant? This will mark the house as Vacant." 
+        : "Are you sure you want to leave this house? Your residency will end immediately.";
+
+    if (window.confirm(confirmMessage)) {
+        const success = await vacateHouse(houseId);
+        if (success) {
+            alert("Success! House is now vacant.");
+            // Refresh data based on role
+            if (user.role === 'renter') {
+                setMyHome(null);
+                fetchRenterData();
+            } else {
+                fetchMyHouses();
+            }
+        } else {
+            alert("Failed to vacate. Please try again.");
+        }
+    }
   };
 
   // --- OWNER FUNCTIONS ---
@@ -116,13 +141,23 @@ const DashboardPage = () => {
                                 <p className="text-slate-500 mb-2">{myHome.location}</p>
                                 <p className="text-blue-600 font-bold mb-4">${myHome.rent}/month</p>
                                 
-                                <div className="p-3 bg-slate-50 rounded-lg border inline-block">
-                                    <span className="text-xs font-bold text-slate-500 uppercase mr-2">Rent Status:</span>
-                                    {myHome.currentTenant.isRentPaid ? (
-                                        <span className="text-green-600 font-bold flex items-center gap-1 inline-flex"><CheckCircle size={14}/> Paid</span>
-                                    ) : (
-                                        <span className="text-red-500 font-bold flex items-center gap-1 inline-flex"><XCircle size={14}/> Due / Unpaid</span>
-                                    )}
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-slate-50 rounded-lg border inline-block">
+                                        <span className="text-xs font-bold text-slate-500 uppercase mr-2">Rent Status:</span>
+                                        {myHome.currentTenant.isRentPaid ? (
+                                            <span className="text-green-600 font-bold flex items-center gap-1 inline-flex"><CheckCircle size={14}/> Paid</span>
+                                        ) : (
+                                            <span className="text-red-500 font-bold flex items-center gap-1 inline-flex"><XCircle size={14}/> Due / Unpaid</span>
+                                        )}
+                                    </div>
+
+                                    {/* --- RENTER VACATE BUTTON --- */}
+                                    <button 
+                                        onClick={() => handleVacate(myHome._id)}
+                                        className="bg-red-50 text-red-600 px-4 py-3 rounded-lg font-bold text-sm border border-red-100 hover:bg-red-100 transition flex items-center gap-2"
+                                    >
+                                        <DoorOpen size={16}/> Leave House
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -234,9 +269,16 @@ const DashboardPage = () => {
                                     </div>
                                 )}
                                 
-                                <button onClick={() => toggleRent(house._id)} className={`mt-3 w-full py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition ${house.currentTenant.isRentPaid ? 'bg-green-500 text-white' : 'bg-white border-2 border-red-100 text-red-500'}`}>
-                                    {house.currentTenant.isRentPaid ? <><CheckCircle size={16}/> Paid</> : <><XCircle size={16}/> Mark Paid</>}
-                                </button>
+                                <div className="grid grid-cols-2 gap-2 mt-3">
+                                    <button onClick={() => toggleRent(house._id)} className={`py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1 transition ${house.currentTenant.isRentPaid ? 'bg-green-500 text-white' : 'bg-white border-2 border-red-100 text-red-500'}`}>
+                                        {house.currentTenant.isRentPaid ? <><CheckCircle size={14}/> Paid</> : <><XCircle size={14}/> Unpaid</>}
+                                    </button>
+                                    
+                                    {/* --- OWNER VACATE BUTTON --- */}
+                                    <button onClick={() => handleVacate(house._id)} className="bg-red-500 text-white py-2 rounded-lg font-bold text-xs hover:bg-red-600 transition">
+                                        Vacate
+                                    </button>
+                                </div>
                             </div>
                         ) : (
                             <div className="mt-4">
