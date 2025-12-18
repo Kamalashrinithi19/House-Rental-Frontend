@@ -106,8 +106,40 @@ const DashboardPage = () => {
   };
 
   const deleteHouse = async (houseId) => { if(!window.confirm("Delete?")) return; await fetch(`https://house-rental-backend-1-5gyd.onrender.com/api/houses/${houseId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${user.token}` } }); fetchMyHouses(); };
-  const handleAccept = async (houseId, requestId) => { await fetch(`https://house-rental-backend-1-5gyd.onrender.com/api/houses/${houseId}/accept`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` }, body: JSON.stringify({ requestId }) }); fetchMyHouses(); };
-  const handleDecline = async (houseId, requestId) => { await fetch(`https://house-rental-backend-1-5gyd.onrender.com/api/houses/${houseId}/decline`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` }, body: JSON.stringify({ requestId }) }); fetchMyHouses(); };
+// --- CLEANED FUNCTIONS (No Hidden Spaces) ---
+  const handleAccept = async (houseId, requestId) => { 
+      try {
+        // I typed this manually to ensure no spaces exist
+        const res = await fetch(`https://house-rental-backend-1-5gyd.onrender.com/api/houses/${houseId}/accept`, { 
+            method: 'PUT', 
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` }, 
+            body: JSON.stringify({ requestId }) 
+        });
+        
+        const data = await res.json();
+        if (res.ok) {
+            alert("Request Accepted!");
+            fetchMyHouses();
+        } else {
+            alert(data.message || "Failed to accept");
+        }
+      } catch (err) { console.error(err); }
+  };
+
+  const handleDecline = async (houseId, requestId) => { 
+      try {
+        const res = await fetch(`https://house-rental-backend-1-5gyd.onrender.com/api/houses/${houseId}/decline`, { 
+            method: 'PUT', 
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` }, 
+            body: JSON.stringify({ requestId }) 
+        });
+        
+        if (res.ok) {
+            alert("Request Declined");
+            fetchMyHouses();
+        }
+      } catch (err) { console.error(err); }
+  };
   const toggleRent = async (houseId) => { await fetch(`https://house-rental-backend-1-5gyd.onrender.com/api/houses/${houseId}/rent`, { method: 'PUT', headers: { Authorization: `Bearer ${user.token}` } }); fetchMyHouses(); };
 
   if (!user) return null;
