@@ -10,7 +10,7 @@ export const RentalProvider = ({ children }) => {
   const fetchMyHouses = async () => {
     if(!user || user.role !== 'owner') return; // Safety check
     try {
-      const res = await fetch('http://localhost:5000/api/houses/my-houses', {
+      const res = await fetch('https://house-rental-backend-1-5gyd.onrender.com/api/houses/my-houses', {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       const data = await res.json();
@@ -23,7 +23,7 @@ export const RentalProvider = ({ children }) => {
   // --- LOGIN FIX ---
   const login = async (email, password) => {
     try {
-      const res = await fetch('http://localhost:5000/api/users/login', {
+      const res = await fetch('https://house-rental-backend-1-5gyd.onrender.com/api/users/login', {
         method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ email, password })
       });
@@ -39,7 +39,7 @@ export const RentalProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      const res = await fetch('http://localhost:5000/api/users/register', {
+      const res = await fetch('https://house-rental-backend-1-5gyd.onrender.com/api/users/register', {
           method: 'POST', headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(userData)
         });

@@ -12,7 +12,7 @@ const HouseDetailsPage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0); // State for image carousel
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/houses`)
+    fetch(`https://house-rental-backend-1-5gyd.onrender.com/api/houses`)
       .then(res => res.json())
       .then(data => {
         const found = data.find(h => h._id === id);
@@ -30,7 +30,7 @@ const HouseDetailsPage = () => {
     if(user.role === 'owner') return alert("Owners cannot book houses.");
 
     try {
-        const res = await fetch(`http://localhost:5000/api/houses/${id}/request`, {
+        const res = await fetch(`https://house-rental-backend-1-5gyd.onrender.com/api/houses/${id}/request`, {
             method: 'PUT',
             headers: { 
                 'Content-Type': 'application/json',

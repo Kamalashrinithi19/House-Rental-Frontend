@@ -35,7 +35,7 @@ const DashboardPage = () => {
   // --- API HELPERS ---
   const fetchRenterData = async () => {
       try {
-          const res = await fetch(`http://localhost:5000/api/houses`);
+          const res = await fetch(`https://house-rental-backend-1-5gyd.onrender.com/api/houses`);
           const allHouses = await res.json();
           if (Array.isArray(allHouses)) {
             // Pending Requests
@@ -62,7 +62,7 @@ const DashboardPage = () => {
     if (!user.token) return alert("Not Authenticated");
     const imagesArray = newHouse.images.split(',').map(url => url.trim()).filter(url => url !== "");
     const amenitiesArray = newHouse.amenities.split(',').map(item => item.trim()).filter(item => item !== "");
-    await fetch('http://localhost:5000/api/houses', {
+    await fetch('https://house-rental-backend-1-5gyd.onrender.com/api/houses', {
         method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
         body: JSON.stringify({ ...newHouse, images: imagesArray, amenities: amenitiesArray })
     });
@@ -77,7 +77,7 @@ const DashboardPage = () => {
   };
 
   const saveTenantChanges = async (houseId) => {
-      await fetch(`http://localhost:5000/api/houses/${houseId}/tenant-details`, {
+      await fetch(`https://house-rental-backend-1-5gyd.onrender.com/api/houses/${houseId}/tenant-details`, {
           method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
           body: JSON.stringify(editForm)
       });
@@ -85,10 +85,10 @@ const DashboardPage = () => {
       fetchMyHouses();
   };
 
-  const deleteHouse = async (houseId) => { if(!window.confirm("Delete?")) return; await fetch(`http://localhost:5000/api/houses/${houseId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${user.token}` } }); fetchMyHouses(); };
-  const handleAccept = async (houseId, requestId) => { await fetch(`http://localhost:5000/api/houses/${houseId}/accept`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` }, body: JSON.stringify({ requestId }) }); fetchMyHouses(); };
-  const handleDecline = async (houseId, requestId) => { await fetch(`http://localhost:5000/api/houses/${houseId}/decline`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` }, body: JSON.stringify({ requestId }) }); fetchMyHouses(); };
-  const toggleRent = async (houseId) => { await fetch(`http://localhost:5000/api/houses/${houseId}/rent`, { method: 'PUT', headers: { Authorization: `Bearer ${user.token}` } }); fetchMyHouses(); };
+  const deleteHouse = async (houseId) => { if(!window.confirm("Delete?")) return; await fetch(`https://house-rental-backend-1-5gyd.onrender.com/api/houses/${houseId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${user.token}` } }); fetchMyHouses(); };
+  const handleAccept = async (houseId, requestId) => { await fetch(`https://house-rental-backend-1-5gyd.onrender.com/api/houses/${houseId}/accept`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` }, body: JSON.stringify({ requestId }) }); fetchMyHouses(); };
+  const handleDecline = async (houseId, requestId) => { await fetch(`https://house-rental-backend-1-5gyd.onrender.com/api/houses/${houseId}/decline`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` }, body: JSON.stringify({ requestId }) }); fetchMyHouses(); };
+  const toggleRent = async (houseId) => { await fetch(`https://house-rental-backend-1-5gyd.onrender.com/api/houses/${houseId}/rent`, { method: 'PUT', headers: { Authorization: `Bearer ${user.token}` } }); fetchMyHouses(); };
 
   if (!user) return null;
 

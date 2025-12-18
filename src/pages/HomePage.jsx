@@ -14,7 +14,7 @@ const HomePage = () => {
     const fetchHouses = async () => {
       try {
           setLoading(true);
-          const res = await fetch(`http://localhost:5000/api/houses?query=${search}`);
+          const res = await fetch(`https://house-rental-backend-1-5gyd.onrender.com/api/houses?query=${search}`);
           const data = await res.json();
           setHouses(Array.isArray(data) ? data : []);
       } catch (err) { console.error(err); setHouses([]); } finally { setLoading(false); }
@@ -25,7 +25,7 @@ const HomePage = () => {
   const handleBook = async (houseId) => {
     if(!user) { alert("Please Login to Request Booking"); navigate('/login'); return; }
     if(user.role === 'owner') return alert("Owners cannot book houses.");
-    const res = await fetch(`http://localhost:5000/api/houses/${houseId}/request`, { method: 'PUT', headers: { Authorization: `Bearer ${user.token}` } });
+    const res = await fetch(`https://house-rental-backend-1-5gyd.onrender.com/${houseId}/request`, { method: 'PUT', headers: { Authorization: `Bearer ${user.token}` } });
     if(res.ok) { alert("Request Sent!"); } else { alert("Error sending request"); }
   };
 
