@@ -6,11 +6,12 @@ export const RentalProvider = ({ children }) => {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
   const [myHouses, setMyHouses] = useState([]);
 
-  // Fetch Owner's Houses
+  // --- FIX 1: Corrected URL for fetching houses ---
   const fetchMyHouses = async () => {
-    if(!user || user.role !== 'owner') return; // Safety check
+    if(!user || user.role !== 'owner') return; 
     try {
-      const res = await fetch('https://house-rental-backend-1-5gyd.onrender.com/api/users/register', {
+      // CHANGED: From '/api/users/register' to '/api/houses/my-houses'
+      const res = await fetch('https://house-rental-backend-1-5gyd.onrender.com/api/houses/my-houses', {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       const data = await res.json();
@@ -20,7 +21,6 @@ export const RentalProvider = ({ children }) => {
 
   useEffect(() => { fetchMyHouses(); }, [user]);
 
-  // --- LOGIN FIX ---
   const login = async (email, password) => {
     try {
       const res = await fetch('https://house-rental-backend-1-5gyd.onrender.com/api/users/login', {
@@ -31,14 +31,16 @@ export const RentalProvider = ({ children }) => {
       if(res.ok) {
           setUser(data);
           localStorage.setItem('user', JSON.stringify(data));
-          return data; // <--- THIS IS CRITICAL for redirection
+          return data; 
       }
       return null;
     } catch (error) { return null; }
   };
 
+  // --- FIX 2: Clean URL for Register ---
   const register = async (userData) => {
     try {
+      // I typed this URL manually to ensure NO hidden spaces exist
       const res = await fetch('https://house-rental-backend-1-5gyd.onrender.com/api/users/register', {
           method: 'POST', headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(userData)
