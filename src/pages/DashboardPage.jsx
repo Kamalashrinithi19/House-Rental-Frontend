@@ -56,6 +56,7 @@ const DashboardPage = () => {
   };
 
   // --- NEW: HANDLE VACATE (For both Renter and Owner) ---
+  // --- FIX: Force Reload on Vacate ---
   const handleVacate = async (houseId) => {
     const confirmMessage = user.role === 'owner' 
         ? "Are you sure you want to remove this tenant? This will mark the house as Vacant." 
@@ -65,19 +66,13 @@ const DashboardPage = () => {
         const success = await vacateHouse(houseId);
         if (success) {
             alert("Success! House is now vacant.");
-            // Refresh data based on role
-            if (user.role === 'renter') {
-                setMyHome(null);
-                fetchRenterData();
-            } else {
-                fetchMyHouses();
-            }
+            // Force a hard reload to ensure Database and UI match perfectly
+            window.location.reload(); 
         } else {
             alert("Failed to vacate. Please try again.");
         }
     }
   };
-
   // --- OWNER FUNCTIONS ---
   const handleChange = (e) => setNewHouse({ ...newHouse, [e.target.name]: e.target.value });
   const handleTenantChange = (e) => setNewHouse({ ...newHouse, tenant: { ...newHouse.tenant, [e.target.name]: e.target.value } });
